@@ -110,19 +110,19 @@ with st.container():
             st.success("✅ Calculation completed!")
 
             st.markdown(f"""
-                <div class="result-card">
+                <div class=\"result-card\">
                     <h4>📈 Estimated Additional Monthly Revenue:</h4>
                     <p><strong>${revenue_gain:,.2f}</strong></p>
                 </div>
-                <div class="result-card">
+                <div class=\"result-card\">
                     <h4>📊 Estimated Traffic Gain:</h4>
                     <p>{traffic_gain:.0f} visitors/month</p>
                 </div>
-                <div class="result-card">
+                <div class=\"result-card\">
                     <h4>🧲 Leads:</h4>
                     <p>{leads:.1f}</p>
                 </div>
-                <div class="result-card">
+                <div class=\"result-card\">
                     <h4>🤝 Closed Deals:</h4>
                     <p>{closed_sales:.1f}</p>
                 </div>
@@ -142,13 +142,11 @@ with st.container():
             }
 
             df = pd.DataFrame(results)
-            csv_buffer = io.BytesIO()
-            df.to_csv(csv_buffer, index=False)
-            csv_buffer.seek(0)
+            csv = df.to_csv(index=False).encode("utf-8")
 
             st.download_button(
                 label="Download Results as CSV",
-                data=csv_buffer,
+                data=csv,
                 file_name="keyword_projection_results.csv",
                 mime="text/csv"
             )
