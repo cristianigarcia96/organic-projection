@@ -130,10 +130,13 @@ with st.container():
             }
 
             df = pd.DataFrame(results)
-            csv = df.to_csv(index=False)
+            csv_buffer = io.BytesIO()
+            df.to_csv(csv_buffer, index=False)
+            csv_buffer.seek(0)
+
             st.download_button(
                 label="Download Results as CSV",
-                data=csv,
+                data=csv_buffer,
                 file_name="keyword_projection_results.csv",
                 mime="text/csv"
             )
