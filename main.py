@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Keyword Value Calculator", layout="centered")
 
@@ -126,3 +127,10 @@ with st.container():
                     <p>{closed_sales:.1f}</p>
                 </div>
             """, unsafe_allow_html=True)
+
+            # Display graph
+            fig, ax = plt.subplots()
+            ax.bar(["Current Position", "Target Position"], [traffic_current, traffic_target], color=["#F4A261", "#2A9D8F"])
+            ax.set_title("Traffic Comparison")
+            ax.set_ylabel("Estimated Monthly Traffic")
+            st.pyplot(fig)
