@@ -131,16 +131,27 @@ with st.container():
                     <h4>🤝 Closed Deals:</h4>
                     <p>{closed_target - closed_current:.1f}</p>
                 </div>
+                <div class=\"result-card\">
+                    <h4>📋 Current vs Target Overview:</h4>
+                    <p><strong>Traffic:</strong> {traffic_current:.0f} → {traffic_target:.0f}</p>
+                    <p><strong>Leads:</strong> {leads_current:.1f} → {leads_target:.1f}</p>
+                    <p><strong>Closed Deals:</strong> {closed_current:.1f} → {closed_target:.1f}</p>
+                    <p><strong>Revenue:</strong> ${revenue_current:,.2f} → ${revenue_target:,.2f}</p>
+                </div>
             """, unsafe_allow_html=True)
 
             # Display graph
             fig, ax = plt.subplots()
-            bars = ax.bar(["Traffic", "Leads", "Revenue"],
-                          [traffic_target, leads_target, revenue_target],
-                          color="#2A9D8F", label="Target")
-            ax.bar(["Traffic", "Leads", "Revenue"],
-                   [traffic_current, leads_current, revenue_current],
-                   color="#F4A261", label="Current")
+            bar_width = 0.35
+            index = range(3)
+
+            ax.bar([i - bar_width/2 for i in index], [traffic_current, leads_current, revenue_current], 
+                   bar_width, label='Current', color="#F4A261")
+            ax.bar([i + bar_width/2 for i in index], [traffic_target, leads_target, revenue_target], 
+                   bar_width, label='Target', color="#2A9D8F")
+
+            ax.set_xticks(index)
+            ax.set_xticklabels(["Traffic", "Leads", "Revenue"])
             ax.set_title("Current vs. Target Comparison")
             ax.legend()
             st.pyplot(fig)
