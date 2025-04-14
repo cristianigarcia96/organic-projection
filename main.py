@@ -65,8 +65,6 @@ with st.container():
             "Local": 0.30
         }
 
-        ctr_value = ctr_models.get(keyword_type, 0.20)
-
         col1, col2 = st.columns(2)
         with col1:
             current_position = st.number_input("Current Keyword Position", min_value=1, max_value=100, value=5, key="cp")
@@ -87,8 +85,22 @@ with st.container():
         submitted = st.form_submit_button("Calculate")
 
         if submitted:
-            traffic_current = keyword_volume * ctr_value
-            traffic_target = keyword_volume * ctr_value
+            ctr_value = ctr_models.get(keyword_type, 0.20)
+
+            def get_ctr(position, base_ctr):
+                if position <= 1:
+                    return base_ctr
+                elif position <= 3:
+                    return base_ctr * 0.75
+                elif position <= 5:
+                    return base_ctr * 0.5
+                elif position <= 10:
+                    return base_ctr * 0.25
+                else:
+                    return base_ctr * 0.1
+
+            traffic_current = keyword_volume * get_ctr(current_position, ctr_value)
+            traffic_target = keyword_volume * get_ctr(target_position, ctr_value)
             traffic_gain = traffic_target - traffic_current
 
             leads = traffic_gain * (conversion_rate / 100)
