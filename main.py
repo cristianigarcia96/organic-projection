@@ -24,6 +24,21 @@ st.markdown("""
             max-width: 800px;
             margin: 0 auto;
         }
+        .result-card {
+            background-color: #FBEDE6;
+            border-left: 6px solid #24554F;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-top: 1rem;
+        }
+        .result-card h4 {
+            margin: 0;
+            color: #1F1A17;
+        }
+        .result-card p {
+            margin: 0.25rem 0 0;
+            font-size: 1.1rem;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -54,4 +69,48 @@ with st.container():
         submitted = st.form_submit_button("Calculate")
 
         if submitted:
-            st.success("✅ Calculation completed! (Functionality to be added)")
+            # CTR model by position
+            ctr_by_position = {
+                1: 0.31,
+                2: 0.24,
+                3: 0.18,
+                4: 0.13,
+                5: 0.09,
+                6: 0.06,
+                7: 0.04,
+                8: 0.03,
+                9: 0.02,
+                10: 0.01
+            }
+
+            ctr_current = ctr_by_position.get(current_position, 0.01)
+            ctr_target = ctr_by_position.get(target_position, 0.01)
+
+            traffic_current = keyword_volume * ctr_current
+            traffic_target = keyword_volume * ctr_target
+            traffic_gain = traffic_target - traffic_current
+
+            leads = traffic_gain * (conversion_rate / 100)
+            closed_sales = leads * (close_rate / 100)
+            revenue_gain = closed_sales * aov
+
+            st.success("✅ Calculation completed!")
+
+            st.markdown(f"""
+                <div class="result-card">
+                    <h4>🔢 Estimated Additional Monthly Revenue:</h4>
+                    <p><strong>${revenue_gain:,.2f}</strong></p>
+                </div>
+                <div class="result-card">
+                    <h4>📈 Estimated Traffic Gain:</h4>
+                    <p>{traffic_gain:.0f} visitors/month</p>
+                </div>
+                <div class="result-card">
+                    <h4>🧲 Leads:</h4>
+                    <p>{leads:.1f}</p>
+                </div>
+                <div class="result-card">
+                    <h4>🤝 Closed Deals:</h4>
+                    <p>{closed_sales:.1f}</p>
+                </div>
+            """, unsafe_allow_html=True)
