@@ -51,13 +51,11 @@ with st.container():
         st.markdown("### 🔍 Keyword Details")
         keyword = st.text_input("Keyword", key="kw")
 
-        # Keyword Type Dropdown
         keyword_type = st.selectbox(
             "Select Keyword Type",
             ["Branded", "Navigational", "Informational", "Transactional", "Commercial", "Local"]
         )
 
-        # CTR Models based on Keyword Type
         ctr_models = {
             "Branded": 0.35,
             "Navigational": 0.20,
@@ -89,25 +87,23 @@ with st.container():
         submitted = st.form_submit_button("Calculate")
 
         if submitted:
-            # Calculate traffic based on CTR for the selected keyword type
             traffic_current = keyword_volume * ctr_value
-            traffic_target = keyword_volume * ctr_value  # Assuming CTR for both current and target is based on keyword type
+            traffic_target = keyword_volume * ctr_value
             traffic_gain = traffic_target - traffic_current
 
             leads = traffic_gain * (conversion_rate / 100)
             closed_sales = leads * (close_rate / 100)
             revenue_gain = closed_sales * aov
 
-            # Prepare results for display
             st.success("✅ Calculation completed!")
 
             st.markdown(f"""
                 <div class="result-card">
-                    <h4>🔢 Estimated Additional Monthly Revenue:</h4>
+                    <h4>📈 Estimated Additional Monthly Revenue:</h4>
                     <p><strong>${revenue_gain:,.2f}</strong></p>
                 </div>
                 <div class="result-card">
-                    <h4>📈 Estimated Traffic Gain:</h4>
+                    <h4>📊 Estimated Traffic Gain:</h4>
                     <p>{traffic_gain:.0f} visitors/month</p>
                 </div>
                 <div class="result-card">
@@ -120,7 +116,6 @@ with st.container():
                 </div>
             """, unsafe_allow_html=True)
 
-            # Prepare results as a DataFrame for CSV export
             results = {
                 "Keyword": [keyword],
                 "Keyword Type": [keyword_type],
@@ -135,15 +130,10 @@ with st.container():
             }
 
             df = pd.DataFrame(results)
-
-            # Convert the DataFrame to CSV
             csv = df.to_csv(index=False)
-            buf = io.StringIO(csv)
-
-            # Add a download button
             st.download_button(
                 label="Download Results as CSV",
-                data=buf.getvalue(),
+                data=csv,
                 file_name="keyword_projection_results.csv",
                 mime="text/csv"
             )
