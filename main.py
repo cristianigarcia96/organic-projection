@@ -1,5 +1,6 @@
 import streamlit as st
-import matplotlib.pyplot as plt
+import pandas as pd
+import io
 
 st.set_page_config(page_title="Keyword Value Calculator", layout="centered")
 
@@ -50,6 +51,24 @@ with st.container():
         st.markdown("### 🔍 Keyword Details")
         keyword = st.text_input("Keyword", key="kw")
 
+        # Keyword Type Dropdown
+        keyword_type = st.selectbox(
+            "Select Keyword Type",
+            ["Branded", "Navigational", "Informational", "Transactional", "Commercial", "Local"]
+        )
+
+        # CTR Models based on Keyword Type
+        ctr_models = {
+            "Branded": 0.35,
+            "Navigational": 0.20,
+            "Informational": 0.07,
+            "Transactional": 0.25,
+            "Commercial": 0.12,
+            "Local": 0.30
+        }
+
+        ctr_value = ctr_models.get(keyword_type, 0.20)
+
         col1, col2 = st.columns(2)
         with col1:
             current_position = st.number_input("Current Keyword Position", min_value=1, max_value=100, value=5, key="cp")
@@ -70,76 +89,61 @@ with st.container():
         submitted = st.form_submit_button("Calculate")
 
         if submitted:
-            # CTR model by position
-            ctr_by_position = {
-                1: 0.31,
-                2: 0.24,
-                3: 0.18,
-                4: 0.13,
-                5: 0.09,
-                6: 0.06,
-                7: 0.04,
-                8: 0.03,
-                9: 0.02,
-                10: 0.01
-            }
-
-            ctr_current = ctr_by_position.get(current_position, 0.01)
-            ctr_target = ctr_by_position.get(target_position, 0.01)
-
-            traffic_current = keyword_volume * ctr_current
-            traffic_target = keyword_volume * ctr_target
+            # Calculate traffic based on CTR for the selected keyword type
+            traffic_current = keyword_volume * ctr_value
+            traffic_target = keyword_volume * ctr_value  # Assuming CTR for both current and target is based on keyword type
             traffic_gain = traffic_target - traffic_current
 
-            leads_current = traffic_current * (conversion_rate / 100)
-            leads_target = traffic_target * (conversion_rate / 100)
+            leads = traffic_gain * (conversion_rate / 100)
+            closed_sales = leads * (close_rate / 100)
+            revenue_gain = closed_sales * aov
 
-            closed_sales_current = leads_current * (close_rate / 100)
-            closed_sales_target = leads_target * (close_rate / 100)
-
-            revenue_current = closed_sales_current * aov
-            revenue_target = closed_sales_target * aov
-            revenue_gain = revenue_target - revenue_current
-
+            # Prepare results for display
             st.success("✅ Calculation completed!")
 
             st.markdown(f"""
                 <div class="result-card">
-                    <h4>💰 Current Revenue:</h4>
-                    <p>${revenue_current:,.2f}</p>
+                    <h4>🔢 Estimated Additional Monthly Revenue:</h4>
+                    <p><strong>${revenue_gain:,.2f}</strong></p>
                 </div>
                 <div class="result-card">
-                    <h4>💸 Projected Revenue:</h4>
-                    <p>${revenue_target:,.2f}</p>
-                </div>
-                <div class="result-card">
-                    <h4>📈 Traffic Gain:</h4>
+                    <h4>📈 Estimated Traffic Gain:</h4>
                     <p>{traffic_gain:.0f} visitors/month</p>
                 </div>
                 <div class="result-card">
-                    <h4>🧲 Leads (Current → Projected):</h4>
-                    <p>{leads_current:.1f} → {leads_target:.1f}</p>
+                    <h4>🧲 Leads:</h4>
+                    <p>{leads:.1f}</p>
                 </div>
                 <div class="result-card">
-                    <h4>🤝 Closed Deals (Current → Projected):</h4>
-                    <p>{closed_sales_current:.1f} → {closed_sales_target:.1f}</p>
+                    <h4>🤝 Closed Deals:</h4>
+                    <p>{closed_sales:.1f}</p>
                 </div>
             """, unsafe_allow_html=True)
 
-            # Graph
-            fig, ax = plt.subplots()
-            categories = ['Traffic', 'Leads', 'Closed Deals', 'Revenue']
-            current_values = [traffic_current, leads_current, closed_sales_current, revenue_current]
-            projected_values = [traffic_target, leads_target, closed_sales_target, revenue_target]
+            # Prepare results as a DataFrame for CSV export
+            results = {
+                "Keyword": [keyword],
+                "Keyword Type": [keyword_type],
+                "CTR (%)": [ctr_value * 100],
+                "Current Position": [current_position],
+                "Target Position": [target_position],
+                "Keyword Volume": [keyword_volume],
+                "Traffic Gain": [traffic_gain],
+                "Leads": [leads],
+                "Closed Deals": [closed_sales],
+                "Revenue Gain ($)": [revenue_gain]
+            }
 
-            x = range(len(categories))
-            ax.bar(x, current_values, width=0.35, label='Current', color='#24554F')
-            ax.bar([p + 0.35 for p in x], projected_values, width=0.35, label='Projected', color='#65C18C')
+            df = pd.DataFrame(results)
 
-            ax.set_xticks([p + 0.175 for p in x])
-            ax.set_xticklabels(categories)
-            ax.set_ylabel("Value")
-            ax.set_title("Current vs. Projected Impact")
-            ax.legend()
+            # Convert the DataFrame to CSV
+            csv = df.to_csv(index=False)
+            buf = io.StringIO(csv)
 
-            st.pyplot(fig)
+            # Add a download button
+            st.download_button(
+                label="Download Results as CSV",
+                data=buf.getvalue(),
+                file_name="keyword_projection_results.csv",
+                mime="text/csv"
+            )
