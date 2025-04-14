@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import io
 
 st.set_page_config(page_title="Keyword Value Calculator", layout="centered")
 
@@ -127,26 +126,3 @@ with st.container():
                     <p>{closed_sales:.1f}</p>
                 </div>
             """, unsafe_allow_html=True)
-
-            results = {
-                "Keyword": [keyword],
-                "Keyword Type": [keyword_type],
-                "CTR (%)": [ctr_value * 100],
-                "Current Position": [current_position],
-                "Target Position": [target_position],
-                "Keyword Volume": [keyword_volume],
-                "Traffic Gain": [traffic_gain],
-                "Leads": [leads],
-                "Closed Deals": [closed_sales],
-                "Revenue Gain ($)": [revenue_gain]
-            }
-
-            df = pd.DataFrame(results)
-            csv = df.to_csv(index=False).encode("utf-8")
-
-            st.download_button(
-                label="Download Results as CSV",
-                data=csv,
-                file_name="keyword_projection_results.csv",
-                mime="text/csv"
-            )
