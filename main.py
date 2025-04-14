@@ -1,4 +1,5 @@
 import streamlit as st
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Keyword Value Calculator", layout="centered")
 
@@ -90,27 +91,55 @@ with st.container():
             traffic_target = keyword_volume * ctr_target
             traffic_gain = traffic_target - traffic_current
 
-            leads = traffic_gain * (conversion_rate / 100)
-            closed_sales = leads * (close_rate / 100)
-            revenue_gain = closed_sales * aov
+            leads_current = traffic_current * (conversion_rate / 100)
+            leads_target = traffic_target * (conversion_rate / 100)
+
+            closed_sales_current = leads_current * (close_rate / 100)
+            closed_sales_target = leads_target * (close_rate / 100)
+
+            revenue_current = closed_sales_current * aov
+            revenue_target = closed_sales_target * aov
+            revenue_gain = revenue_target - revenue_current
 
             st.success("✅ Calculation completed!")
 
             st.markdown(f"""
                 <div class="result-card">
-                    <h4>🔢 Estimated Additional Monthly Revenue:</h4>
-                    <p><strong>${revenue_gain:,.2f}</strong></p>
+                    <h4>💰 Current Revenue:</h4>
+                    <p>${revenue_current:,.2f}</p>
                 </div>
                 <div class="result-card">
-                    <h4>📈 Estimated Traffic Gain:</h4>
+                    <h4>💸 Projected Revenue:</h4>
+                    <p>${revenue_target:,.2f}</p>
+                </div>
+                <div class="result-card">
+                    <h4>📈 Traffic Gain:</h4>
                     <p>{traffic_gain:.0f} visitors/month</p>
                 </div>
                 <div class="result-card">
-                    <h4>🧲 Leads:</h4>
-                    <p>{leads:.1f}</p>
+                    <h4>🧲 Leads (Current → Projected):</h4>
+                    <p>{leads_current:.1f} → {leads_target:.1f}</p>
                 </div>
                 <div class="result-card">
-                    <h4>🤝 Closed Deals:</h4>
-                    <p>{closed_sales:.1f}</p>
+                    <h4>🤝 Closed Deals (Current → Projected):</h4>
+                    <p>{closed_sales_current:.1f} → {closed_sales_target:.1f}</p>
                 </div>
             """, unsafe_allow_html=True)
+
+            # Graph
+            fig, ax = plt.subplots()
+            categories = ['Traffic', 'Leads', 'Closed Deals', 'Revenue']
+            current_values = [traffic_current, leads_current, closed_sales_current, revenue_current]
+            projected_values = [traffic_target, leads_target, closed_sales_target, revenue_target]
+
+            x = range(len(categories))
+            ax.bar(x, current_values, width=0.35, label='Current', color='#24554F')
+            ax.bar([p + 0.35 for p in x], projected_values, width=0.35, label='Projected', color='#65C18C')
+
+            ax.set_xticks([p + 0.175 for p in x])
+            ax.set_xticklabels(categories)
+            ax.set_ylabel("Value")
+            ax.set_title("Current vs. Projected Impact")
+            ax.legend()
+
+            st.pyplot(fig)
