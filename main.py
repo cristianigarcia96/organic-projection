@@ -103,9 +103,14 @@ with st.container():
             traffic_target = keyword_volume * get_ctr(target_position, ctr_value)
             traffic_gain = traffic_target - traffic_current
 
-            leads = traffic_gain * (conversion_rate / 100)
-            closed_sales = leads * (close_rate / 100)
-            revenue_gain = closed_sales * aov
+            leads_current = traffic_current * (conversion_rate / 100)
+            leads_target = traffic_target * (conversion_rate / 100)
+            closed_current = leads_current * (close_rate / 100)
+            closed_target = leads_target * (close_rate / 100)
+
+            revenue_current = closed_current * aov
+            revenue_target = closed_target * aov
+            revenue_gain = revenue_target - revenue_current
 
             st.success("✅ Calculation completed!")
 
@@ -120,17 +125,22 @@ with st.container():
                 </div>
                 <div class=\"result-card\">
                     <h4>🧲 Leads:</h4>
-                    <p>{leads:.1f}</p>
+                    <p>{leads_target - leads_current:.1f}</p>
                 </div>
                 <div class=\"result-card\">
                     <h4>🤝 Closed Deals:</h4>
-                    <p>{closed_sales:.1f}</p>
+                    <p>{closed_target - closed_current:.1f}</p>
                 </div>
             """, unsafe_allow_html=True)
 
             # Display graph
             fig, ax = plt.subplots()
-            ax.bar(["Current Position", "Target Position"], [traffic_current, traffic_target], color=["#F4A261", "#2A9D8F"])
-            ax.set_title("Traffic Comparison")
-            ax.set_ylabel("Estimated Monthly Traffic")
+            bars = ax.bar(["Traffic", "Leads", "Revenue"],
+                          [traffic_target, leads_target, revenue_target],
+                          color="#2A9D8F", label="Target")
+            ax.bar(["Traffic", "Leads", "Revenue"],
+                   [traffic_current, leads_current, revenue_current],
+                   color="#F4A261", label="Current")
+            ax.set_title("Current vs. Target Comparison")
+            ax.legend()
             st.pyplot(fig)
